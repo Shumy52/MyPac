@@ -10,8 +10,6 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
-
 # game.py
 # -------
 # Licensing Information: Please do not distribute or publish solutions to this
@@ -20,6 +18,7 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
+# from keyboardAgents import KeyboardAgent2
 from util import *
 import time, os
 import traceback
@@ -620,6 +619,17 @@ class Game:
         while not self.gameOver:
             # Fetch the next agent
             agent = self.agents[agentIndex]
+
+            # Calculate delta time for corruption mechanics
+            current_time = time.time()
+            delta_time = current_time - last_frame_time
+            last_frame_time = current_time
+
+            # Update Pacman agent with corruption logic
+            from keyboardAgents import KeyboardAgent2
+            if isinstance(agent, KeyboardAgent2):
+                agent.update(delta_time, self.state) # This is wrong, we should check if it's our case or not
+
             move_time = 0
             skip_action = False
             # Generate an observation of the state

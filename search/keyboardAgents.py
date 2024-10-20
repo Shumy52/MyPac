@@ -12,9 +12,11 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-from game import Agent, Actions
-from game import Directions
+
 import random
+
+from game import Directions, Agent, Actions
+
 
 class KeyboardAgent(Agent):
     """
@@ -89,52 +91,50 @@ class KeyboardAgent2(KeyboardAgent):
     When the corruption meter hits 100%, Pacman becomes possessed and seeks the nearest ghost.
     """
     # Define keys for movement
-    WEST_KEY = 'j'
-    EAST_KEY = "l"
-    NORTH_KEY = 'i'
-    SOUTH_KEY = 'k'
-    STOP_KEY = 'u'
+    WEST_KEY = 'a'
+    EAST_KEY = "d"
+    NORTH_KEY = 'w'
+    SOUTH_KEY = 's'
+    STOP_KEY = 'q'
 
     def __init__(self):
         super().__init__()
         self.corruption = 30  # Start with 30% corruption
-        self.corruption_rate = 1  # Percent per second increase
+        self.corruption_rate = 60  # Percent per second increase
         self.possessed = False  # Possession flag
         self.time_possessed = 0  # Time left for possession
 
-    def updateCorruption(self, delta_time):
-        """
-        Increases the corruption meter over time. If it hits 100%, possession begins.
-        """
-        if not self.possessed:
-            self.corruption += self.corruption_rate * delta_time
-            if self.corruption >= 100:
-                self.startPossession()
-
-    def startPossession(self):
-        """
-        Starts possession of Pacman, during which he will seek out the nearest ghost.
-        """
-        self.possessed = True
-        self.time_possessed = random.randint(3, 6)  # Possession lasts 3-6 seconds
-
-    def endPossession(self):
-        """
-        Ends possession and resets the corruption meter.
-        """
-        self.possessed = False
-        self.corruption = 0  # Reset corruption
+    # def updateCorruption(self, delta_time):
+    #     """
+    #     Increases the corruption meter over time. If it hits 100%, possession begins.
+    #     """
+    #     if not self.possessed:
+    #         self.corruption += self.corruption_rate * delta_time
+    #         if self.corruption >= 100:
+    #             self.startPossession()`
 
     def update(self, delta_time, state):
         """
-        Updates the agent each frame. Increases corruption and handles possession timer.
+        Update the agent's state, including corruption mechanics and storing game state.
         """
+        # Store the current state for use in moveTowardsGhost
+        self.current_state = state
+
+        print(self.corruption)
+
+        # Update corruption meter and possession status
+        self.corruption += delta_time * self.corruption_rate
+
         if self.possessed:
-            self.time_possessed -= delta_time
-            if self.time_possessed <= 0:
-                self.endPossession()
-        else:
-            self.updateCorruption(delta_time)
+            self.possession_time -= delta_time
+            print(self.possession_time)
+            if self.possession_time <= 0:
+                self.possessed = False
+                self.corruption = 0
+        elif self.corruption >= 100:
+            self.possessed = True
+            self.possession_time = 1  # Pacman is possessed for 3-6 seconds
+            print(self.possessed)
 
     def getMove(self, legal):
         """
@@ -143,7 +143,7 @@ class KeyboardAgent2(KeyboardAgent):
         """
         # Check if Pacman is possessed
         if self.possessed:
-            return self.moveTowardsGhost(legal) # WRONG
+            return self.moveTowardsGhost(self.current_state) # REPAIRED
         else:
             # If not possessed, return normal keyboard movement
             move = Directions.STOP
@@ -158,7 +158,7 @@ class KeyboardAgent2(KeyboardAgent):
         Greedy method for moving towards the nearest ghost.
         Chooses a legal move that gets Pacman closer to the nearest ghost.
         """
-        ghost_positions = [ghost.getPosition() for ghost in state.ghosts]
+        ghost_positions = state.getGhostPositions()
         pacman_position = state.getPacmanPosition()
 
         # Find the nearest ghost
