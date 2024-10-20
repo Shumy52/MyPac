@@ -553,7 +553,7 @@ class Game:
     def mute(self, agentIndex):
         if not self.muteAgents: return
         global OLD_STDOUT, OLD_STDERR
-        import cStringIO
+        # import cStringIO
         OLD_STDOUT = sys.stdout
         OLD_STDERR = sys.stderr
         sys.stdout = self.agentOutput[agentIndex]
@@ -573,6 +573,9 @@ class Game:
         """
         self.display.initialize(self.state.data)
         self.numMoves = 0
+
+        # Start tracking time for corruption mechanics
+        last_frame_time = time.time()
 
         ###self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start

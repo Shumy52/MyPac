@@ -123,7 +123,7 @@ def depthFirstSearch(problem):
             break
         # expand node
         for elem in problem.getSuccessors(node[0]):
-            print(problem.getSuccessors(node[0]), "something")
+            # print(problem.getSuccessors(node[0]), "something")
             # if successor has not already been visited
             if elem[0] not in visited.keys():
                 # store successor and its parent
@@ -217,9 +217,43 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    """
+        Q1.3
+        Search the node that has the lowest combined cost and heuristic first."""
+    """Call heuristic(s,problem) to get h(s) value."""
+    "*** YOUR CODE HERE ***"
+
+    fringe = util.PriorityQueue()
+    start_node = problem.getStartState()
+    start_heuristic = heuristic(start_node, problem)
+    visited_nodes = []
+    fringe.push((start_node, [], 0), 0)
+    directions = []
+    while not fringe.isEmpty():
+        get_xy, directions, get_cost = fringe.pop()
+
+        if problem.isGoalState(get_xy):
+            return directions
+
+        if not get_xy in visited_nodes:
+            # Track visited_nodes
+            visited_nodes.append(get_xy)
+
+            for coordinates, direction, successor_cost in problem.getSuccessors(get_xy):
+                if not coordinates in visited_nodes:
+                    # Pass by reference
+                    actions_list = list(directions)
+                    actions_list += [direction]
+                    # Get cost so far
+                    cost_actions = problem.getCostOfActions(actions_list)
+                    get_heuristic = heuristic(coordinates, problem)
+                    fringe.push((coordinates, actions_list, 1), cost_actions + get_heuristic)
+                    # cost_actions + get_heuristic is the "priority" value
+    return []
     util.raiseNotDefined()
 
 
