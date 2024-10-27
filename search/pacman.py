@@ -127,6 +127,9 @@ class GameState:
     def getLegalPacmanActions( self ):
         return self.getLegalActions( 0 )
 
+    def getLegalGhostActions( self, agentIndex ):
+        return self.getLegalActions( agentIndex )
+
     def generatePacmanSuccessor( self, action ):
         """
         Generates the successor state after the specified pacman move

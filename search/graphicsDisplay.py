@@ -79,6 +79,11 @@ CAPSULE_SIZE = 0.25
 # Drawing walls
 WALL_RADIUS = 0.15
 
+# Corrupted
+CORRUPTED_COLOR = formatColor(1, 0, 0)
+
+#TODO: Introduce a variable to see if we're playing corrupted or not...
+
 class InfoPane:
     def __init__(self, layout, gridSize):
         self.gridSize = gridSize
@@ -120,6 +125,13 @@ class InfoPane:
 
     def updateScore(self, score):
         changeText(self.scoreText, "SCORE: % 4d" % score)
+
+    def updateCorruption(self, is_corrupted, corruptionLevel): #TODO: to complete
+        print(is_corrupted)
+        if is_corrupted:
+            changeText(self.scoreText, "CORRUPTED, Percentage: % 4d" % corruptionLevel)
+        else:
+            changeText(self.scoreText, "CLEAN Time to corruption: % 4d" % corruptionLevel)
 
     def setTeam(self, isBlue):
         text = "RED TEAM"
@@ -209,6 +221,7 @@ class PacmanGraphics:
         refresh()
 
     def drawAgentObjects(self, state):
+        # print("Draw Agent Objects called")
         self.agentImages = [] # (agentState, image)
         for index, agent in enumerate(state.agentStates):
             if agent.isPacman:
@@ -234,6 +247,7 @@ class PacmanGraphics:
         refresh()
 
     def update(self, newState):
+        # print("Update called!")
         agentIndex = newState._agentMoved
         agentState = newState.agentStates[agentIndex]
 
@@ -249,7 +263,12 @@ class PacmanGraphics:
             self.removeFood(newState._foodEaten, self.food)
         if newState._capsuleEaten != None:
             self.removeCapsule(newState._capsuleEaten, self.capsules)
-        self.infoPane.updateScore(newState.score)
+        #TODO: Print score if normal, corruption if that's the mode
+        # self.infoPane.updateScore(newState.score)
+        # print(self.corruptionLevel)
+
+        self.infoPane.updateCorruption(self.corrupted, self.corruptionLevel)
+
         if 'ghostDistances' in dir(newState):
             self.infoPane.updateGhostDistances(newState.ghostDistances)
 
@@ -264,14 +283,31 @@ class PacmanGraphics:
                        BACKGROUND_COLOR,
                        "CS188 Pacman")
 
+    #TODO: introduce here something to make him red
+    #TODO: maybe we're modifying where we should
+
+    corrupted = False
+    corruptionLevel = 0
+
+    @staticmethod
+    def setCorrupted(cls, is_corrupted, corruptedLevel):
+        cls.corrupted = is_corrupted
+        print(is_corrupted, cls.corrupted)
+        cls.corruptionLevel = corruptedLevel
+
+
     def drawPacman(self, pacman, index):
         position = self.getPosition(pacman)
         screen_point = self.to_screen(position)
         endpoints = self.getEndpoints(self.getDirection(pacman))
 
         width = PACMAN_OUTLINE_WIDTH
-        outlineColor = PACMAN_COLOR
-        fillColor = PACMAN_COLOR
+        if self.corrupted:
+            outlineColor = CORRUPTED_COLOR
+            fillColor = CORRUPTED_COLOR
+        else:
+            outlineColor = PACMAN_COLOR
+            fillColor = PACMAN_COLOR
 
         if self.capture:
             outlineColor = TEAM_COLORS[index % 2]
@@ -333,6 +369,7 @@ class PacmanGraphics:
             return GHOST_COLORS[ghostIndex]
 
     def drawGhost(self, ghost, agentIndex):
+        # print("Draw Ghost called!")
         pos = self.getPosition(ghost)
         dir = self.getDirection(ghost)
         (screen_x, screen_y) = (self.to_screen(pos) )
